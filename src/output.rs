@@ -3,6 +3,7 @@
 //! Handles virtual mouse device creation and control via uinput
 
 use anyhow::{Context, Result};
+use bytemuck::{Pod, Zeroable};
 use std::fs::{File, OpenOptions};
 use std::io::Write;
 use std::os::unix::io::AsRawFd;
@@ -40,6 +41,7 @@ const UI_DEV_DESTROY: u64 = 0x5502;
 
 /// uinput_user_dev structure for device setup
 #[repr(C)]
+#[derive(Copy, Clone, Pod, Zeroable)]
 struct UinputUserDev {
     name: [u8; 80],
     id_bustype: u16,
@@ -72,6 +74,7 @@ impl Default for UinputUserDev {
 
 /// Input event structure
 #[repr(C)]
+#[derive(Copy, Clone, Pod, Zeroable)]
 struct InputEvent {
     tv_sec: i64,
     tv_usec: i64,
@@ -92,12 +95,7 @@ impl InputEvent {
     }
 
     fn as_bytes(&self) -> &[u8] {
-        unsafe {
-            std::slice::from_raw_parts(
-                self as *const _ as *const u8,
-                std::mem::size_of::<InputEvent>(),
-            )
-        }
+        bytemuck::bytes_of(self)
     }
 }
 
@@ -160,12 +158,7 @@ impl VirtualPointer {
         dev.name[..name.len()].copy_from_slice(name);
 
         // Write device info
-        let dev_bytes = unsafe {
-            std::slice::from_raw_parts(
-                &dev as *const _ as *const u8,
-                std::mem::size_of::<UinputUserDev>(),
-            )
-        };
+        let dev_bytes = bytemuck::bytes_of(&dev);
 
         let mut file = file;
         file.write_all(dev_bytes)
