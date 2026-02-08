@@ -1,0 +1,50 @@
+[package]
+name = "kwarpd"
+version = "0.1.0"
+edition = "2024"
+description = "A keyboard-driven cursor manipulation tool for KWin on Wayland"
+authors = ["kwarpd contributors"]
+license = "MIT"
+
+[dependencies]
+# Wayland client and protocols
+wayland-client = "0.31"
+wayland-protocols = { version = "0.32", features = ["client", "unstable"] }
+wayland-protocols-wlr = { version = "0.3", features = ["client"] }
+
+# High-level toolkit for layer-shell
+smithay-client-toolkit = { version = "0.19", default-features = false, features = ["calloop"] }
+
+# Event loop
+calloop = "0.14"
+
+# Input handling (evdev) - no libudev dep since we scan /dev/input ourselves
+evdev = "0.13"
+
+# Low-level system calls
+libc = "0.2"
+
+# Configuration parsing
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.8"
+
+# Command-line arguments
+clap = { version = "4.5", features = ["derive"] }
+
+# Error handling and logging
+anyhow = "1.0"
+log = "0.4"
+env_logger = "0.11"
+
+# Keyboard layout handling
+xkbcommon = "0.8"
+
+# Graphics rendering
+tiny-skia = "0.11"
+fontdue = "0.9"
+
+# Directories for config path
+dirs = "6.0"
+
+# For non-blocking I/O
+nix = { version = "0.29", features = ["ioctl", "fs"] }
