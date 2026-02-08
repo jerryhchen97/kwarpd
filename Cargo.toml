@@ -4,7 +4,8 @@ version = "0.1.0"
 edition = "2024"
 description = "A keyboard-driven cursor manipulation tool for KWin on Wayland"
 authors = ["kwarpd contributors"]
-license = "MIT"
+license = "GPL-3.0-or-later"
+license-file = "LICENSE"
 
 [dependencies]
 # Wayland client and protocols
