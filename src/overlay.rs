@@ -10,19 +10,19 @@ use smithay_client_toolkit::{
     registry::{ProvidesRegistryState, RegistryState},
     registry_handlers,
     shell::{
+        WaylandSurface,
         wlr_layer::{
             Anchor, KeyboardInteractivity, Layer, LayerShell, LayerShellHandler, LayerSurface,
             LayerSurfaceConfigure,
         },
-        WaylandSurface,
     },
-    shm::{slot::SlotPool, Shm, ShmHandler},
+    shm::{Shm, ShmHandler, slot::SlotPool},
 };
 use std::sync::Arc;
 use wayland_client::{
+    Connection, QueueHandle,
     globals::registry_queue_init,
     protocol::{wl_output, wl_shm, wl_surface},
-    Connection, QueueHandle,
 };
 
 use crate::config::Config;
@@ -36,7 +36,12 @@ pub struct HintPoint {
 }
 
 /// Calculate hint grid positions
-pub fn calculate_hints(width: u32, height: u32, hint_chars: &str, _hint_size: u32) -> Vec<HintPoint> {
+pub fn calculate_hints(
+    width: u32,
+    height: u32,
+    hint_chars: &str,
+    _hint_size: u32,
+) -> Vec<HintPoint> {
     let chars: Vec<char> = hint_chars.chars().collect();
     let num_chars = chars.len();
 
@@ -78,7 +83,10 @@ pub fn calculate_hints(width: u32, height: u32, hint_chars: &str, _hint_size: u3
 
 /// Find a hint by its label prefix
 pub fn find_hint_by_prefix<'a>(hints: &'a [HintPoint], prefix: &str) -> Vec<&'a HintPoint> {
-    hints.iter().filter(|h| h.label.starts_with(prefix)).collect()
+    hints
+        .iter()
+        .filter(|h| h.label.starts_with(prefix))
+        .collect()
 }
 
 /// Find exact hint match
@@ -111,8 +119,10 @@ pub fn draw_hints(
     let font_size = hint_size as f32;
 
     for hint in hints {
-        let is_highlighted = !highlight_prefix.is_empty() && hint.label.starts_with(highlight_prefix);
-        let is_filtered_out = !highlight_prefix.is_empty() && !hint.label.starts_with(highlight_prefix);
+        let is_highlighted =
+            !highlight_prefix.is_empty() && hint.label.starts_with(highlight_prefix);
+        let is_filtered_out =
+            !highlight_prefix.is_empty() && !hint.label.starts_with(highlight_prefix);
 
         if is_filtered_out {
             continue;
@@ -172,9 +182,14 @@ pub fn draw_hints(
                                 let idx = ((py as u32 * width + px as u32) * 4) as usize;
                                 if idx + 3 < buffer.len() {
                                     let a = alpha as f32 / 255.0;
-                                    buffer[idx] = ((1.0 - a) * buffer[idx] as f32 + a * txt_b as f32) as u8;
-                                    buffer[idx + 1] = ((1.0 - a) * buffer[idx + 1] as f32 + a * txt_g as f32) as u8;
-                                    buffer[idx + 2] = ((1.0 - a) * buffer[idx + 2] as f32 + a * txt_r as f32) as u8;
+                                    buffer[idx] =
+                                        ((1.0 - a) * buffer[idx] as f32 + a * txt_b as f32) as u8;
+                                    buffer[idx + 1] = ((1.0 - a) * buffer[idx + 1] as f32
+                                        + a * txt_g as f32)
+                                        as u8;
+                                    buffer[idx + 2] = ((1.0 - a) * buffer[idx + 2] as f32
+                                        + a * txt_r as f32)
+                                        as u8;
                                     buffer[idx + 3] = 255;
                                 }
                             }
@@ -208,18 +223,14 @@ pub struct OverlayApp {
 }
 
 impl OverlayApp {
-    pub fn new(
-        conn: &Connection,
-        qh: &QueueHandle<Self>,
-        config: Arc<Config>,
-    ) -> Result<Self> {
-        let (globals, _) = registry_queue_init::<Self>(conn)
-            .context("Failed to initialize Wayland registry")?;
+    pub fn new(conn: &Connection, qh: &QueueHandle<Self>, config: Arc<Config>) -> Result<Self> {
+        let (globals, _) =
+            registry_queue_init::<Self>(conn).context("Failed to initialize Wayland registry")?;
 
         let registry_state = RegistryState::new(&globals);
         let shm = Shm::bind(&globals, qh).context("Failed to bind wl_shm")?;
-        let compositor = CompositorState::bind(&globals, qh)
-            .context("Failed to bind wl_compositor")?;
+        let compositor =
+            CompositorState::bind(&globals, qh).context("Failed to bind wl_compositor")?;
         let layer_shell = LayerShell::bind(&globals, qh)
             .context("Failed to bind zwlr_layer_shell_v1. Is your compositor compatible?")?;
         let output_state = OutputState::new(&globals, qh);
@@ -341,8 +352,12 @@ impl OverlayApp {
             &self.font_data,
         );
 
-        layer_surface.wl_surface().attach(Some(buffer.wl_buffer()), 0, 0);
-        layer_surface.wl_surface().damage_buffer(0, 0, self.width as i32, self.height as i32);
+        layer_surface
+            .wl_surface()
+            .attach(Some(buffer.wl_buffer()), 0, 0);
+        layer_surface
+            .wl_surface()
+            .damage_buffer(0, 0, self.width as i32, self.height as i32);
         layer_surface.commit();
     }
 
