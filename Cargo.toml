@@ -7,6 +7,9 @@ authors = ["kwarpd contributors"]
 license = "GPL-3.0-or-later"
 license-file = "LICENSE"
 
+[profile.release]
+overflow-checks = true
+
 [dependencies]
 # Wayland client and protocols
 wayland-client = "0.31"
