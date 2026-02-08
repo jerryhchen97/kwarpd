@@ -1,7 +1,7 @@
 [package]
 name = "kwarpd"
 version = "0.1.0"
-edition = "2024"
+edition = "2026"
 description = "A keyboard-driven cursor manipulation tool for KWin on Wayland"
 authors = ["kwarpd contributors"]
 license = "GPL-3.0-or-later"
